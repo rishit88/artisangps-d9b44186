@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { Bell, Home, LineChart, Package, Search, Settings, ShoppingBag, Store, TrendingUp, User } from "lucide-react";
 import { ReactNode } from "react";
 
@@ -76,8 +76,8 @@ export const AppShell = ({
                 <Bell size={16} />
                 <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-primary" />
               </button>
-              <button className="p-2 rounded-full hover:bg-muted"><Settings size={16} /></button>
-              <div className="w-9 h-9 rounded-full bg-secondary text-secondary-foreground grid place-items-center text-sm font-display">र</div>
+              <NavLink to="/settings" className="p-2 rounded-full hover:bg-muted" aria-label="Settings"><Settings size={16} /></NavLink>
+              <NavLink to="/profile" className="w-9 h-9 rounded-full bg-secondary text-secondary-foreground grid place-items-center text-sm font-display hover:opacity-90">र</NavLink>
             </div>
             <div className="px-5 lg:px-8 pb-5 pt-2">
               <div className="flex items-end justify-between gap-4 flex-wrap">
