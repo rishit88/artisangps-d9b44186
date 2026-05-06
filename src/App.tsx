@@ -11,6 +11,7 @@ import Stock from "./pages/Stock.tsx";
 import Orders from "./pages/Orders.tsx";
 import Reports from "./pages/Reports.tsx";
 import Profile from "./pages/Profile.tsx";
+import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
