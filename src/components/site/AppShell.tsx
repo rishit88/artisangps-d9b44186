@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { Bell, Home, LineChart, Package, Search, Settings, ShoppingBag, Store, TrendingUp, User } from "lucide-react";
 import { ReactNode } from "react";
 
