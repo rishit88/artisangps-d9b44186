@@ -253,7 +253,7 @@ const Trends = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full lg:w-[380px] lg:flex-shrink-0 lg:sticky lg:top-32 space-y-6"
+          className="w-full lg:w-[380px] lg:flex-shrink-0 lg:sticky lg:top-4 lg:self-start space-y-6"
         >
           <div className="flex items-center gap-2">
             <TrendingUp size={16} className="text-primary" />
