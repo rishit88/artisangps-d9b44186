@@ -7,8 +7,8 @@ import Index from "./pages/Index.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Trends from "./pages/Trends.tsx";
 import Mandi from "./pages/Mandi.tsx";
-import Stock from "./pages/Stock.tsx";
-import Orders from "./pages/Orders.tsx";
+import Advisor from "./pages/Advisor.tsx";
+import AdvisorOnboarding from "./pages/AdvisorOnboarding.tsx";
 import Reports from "./pages/Reports.tsx";
 import Profile from "./pages/Profile.tsx";
 import Settings from "./pages/Settings.tsx";
@@ -27,8 +27,8 @@ const App = () => (
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/trends" element={<Trends />} />
         <Route path="/mandi" element={<Mandi />} />
-        <Route path="/stock" element={<Stock />} />
-        <Route path="/orders" element={<Orders />} />
+        <Route path="/advisor" element={<Advisor />} />
+        <Route path="/advisor/onboarding" element={<AdvisorOnboarding />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Settings />} />
