@@ -84,7 +84,7 @@ export const AppShell = ({
                 <div>
                   <div className="flex items-baseline gap-3 flex-wrap">
                     <h1 className="font-display text-3xl lg:text-4xl tracking-tight">{title}</h1>
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-data text-justify">{hindi}</div>
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-data ml-auto">{hindi}</div>
                   </div>
                   {subtitle && <p className="text-sm text-muted-foreground mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{subtitle}</p>}
                 </div>
