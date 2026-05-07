@@ -65,7 +65,7 @@ export const AppShell = ({
         <div className="flex flex-col min-w-0">
           <header>
             <div className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl flex items-center gap-4 px-5 lg:px-8 h-16 border-b border-border">
-              <div className="flex items-center gap-2 flex-1 max-w-md">
+              <div className="flex items-center gap-2 max-w-md w-full lg:w-80 mr-auto border border-border rounded-full px-3 py-1.5 bg-card/40">
                 <Search size={16} className="text-muted-foreground" />
                 <input
                   placeholder="Search SKUs, mandi, festivals…"
