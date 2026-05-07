@@ -1,13 +1,12 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { Bell, Home, LineChart, Package, Search, Settings, ShoppingBag, Store, TrendingUp, User } from "lucide-react";
+import { Bell, Compass, Home, LineChart, Search, Settings, Store, TrendingUp, User } from "lucide-react";
 import { ReactNode } from "react";
 
 const nav = [
   { to: "/dashboard", icon: Home, label: "Home", hindi: "घर" },
   { to: "/trends", icon: TrendingUp, label: "Trends", hindi: "रुझान" },
   { to: "/mandi", icon: Store, label: "Mandi", hindi: "मंडी" },
-  { to: "/stock", icon: Package, label: "Stock", hindi: "स्टॉक" },
-  { to: "/orders", icon: ShoppingBag, label: "Orders", hindi: "ऑर्डर" },
+  { to: "/advisor", icon: Compass, label: "Advisor", hindi: "सलाहकार" },
   { to: "/reports", icon: LineChart, label: "Reports", hindi: "रिपोर्ट" },
   { to: "/profile", icon: User, label: "Profile", hindi: "प्रोफ़ाइल" },
 ];
