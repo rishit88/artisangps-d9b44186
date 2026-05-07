@@ -86,7 +86,7 @@ export const AppShell = ({
                     <h1 className="font-display text-3xl lg:text-4xl tracking-tight">{title}</h1>
                     <div className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground font-data">{hindi}</div>
                   </div>
-                  {subtitle && <p className="text-sm text-muted-foreground mt-1 max-w-xl">{subtitle}</p>}
+                  {subtitle && <p className="text-sm text-muted-foreground mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{subtitle}</p>}
                 </div>
                 <div className="text-xs font-data text-muted-foreground">
                   {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}
