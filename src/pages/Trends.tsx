@@ -1,589 +1,570 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowDownRight,
-  ArrowUpRight,
-  Bell,
-  Flame,
-  Home,
-  LineChart as LineIcon,
-  Package,
+  Activity,
+  Bookmark,
+  Heart,
+  MessageCircle,
+  MoreVertical,
   Search,
-  Settings,
-  ShoppingBag,
+  SlidersHorizontal,
   Sparkles,
-  Store,
   TrendingUp,
-  User,
-  Filter,
-  Download,
+  TrendingDown,
+  Sun,
+  ChevronRight,
 } from "lucide-react";
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  Line,
-  LineChart,
-  PolarAngleAxis,
-  PolarGrid,
-  Radar,
-  RadarChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import AppShell from "@/components/site/AppShell";
 import textileImg from "@/assets/craft-textile.jpg";
 import potteryImg from "@/assets/craft-pottery.jpg";
 import metalImg from "@/assets/craft-metal.jpg";
 
-/* ---------------- data ---------------- */
+/* ---------------- mock data ---------------- */
 
-const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+type Trend = {
+  id: number;
+  author: string;
+  title: string;
+  content: string;
+  timestamp: string;
+  hindi?: string;
+  image?: string;
+  tags: string[];
+  badge?: { label: string; tone: "primary" | "forest" | "secondary" | "destructive" };
+  likes: string;
+  comments: number;
+  category: "Textiles" | "Pottery" | "Home Decor" | "Metal";
+};
 
-const demandSeries = months.map((m, i) => ({
-  m,
-  textile: [42, 48, 55, 61, 58, 52, 49, 64, 78, 96, 88, 71][i],
-  pottery: [30, 34, 41, 49, 44, 38, 36, 47, 58, 72, 65, 54][i],
-  metal: [22, 25, 31, 38, 35, 30, 28, 36, 49, 68, 61, 44][i],
-}));
-
-const priceSeries = [
-  { w: "W-12", cotton: 246, indigo: 1780, brass: 588 },
-  { w: "W-13", cotton: 251, indigo: 1810, brass: 595 },
-  { w: "W-14", cotton: 258, indigo: 1830, brass: 601 },
-  { w: "W-15", cotton: 262, indigo: 1815, brass: 608 },
-  { w: "W-16", cotton: 270, indigo: 1850, brass: 612 },
-  { w: "W-17", cotton: 264, indigo: 1840, brass: 605 },
-  { w: "W-18", cotton: 254, indigo: 1820, brass: 598 },
+const TRENDS: Trend[] = [
+  {
+    id: 1,
+    author: "Meera · Textile Insights",
+    hindi: "मीरा · कपड़ा सूचना",
+    title: "Peak demand in wedding silks",
+    content:
+      "Banarasi handlooms with festive reds are pulling +38% query volume on IndiaMart this fortnight. Surat cotton is down 4.2% — best buy window for the next 9 days.",
+    timestamp: "2 hours ago",
+    image: textileImg,
+    tags: ["WeddingSilk", "FloralMotif", "Textiles"],
+    badge: { label: "Trending now", tone: "primary" },
+    likes: "1,245",
+    comments: 89,
+    category: "Textiles",
+  },
+  {
+    id: 2,
+    author: "Ramesh · Khurja Pottery",
+    hindi: "रमेश · खुरजा कुम्हार",
+    title: "Karwa Chauth gifting bowls",
+    content:
+      "Glazed serving bowls in cobalt + ivory are moving fast in Delhi NCR. Cluster lead time 14 days — start a 60-unit batch this week to catch the festival window.",
+    timestamp: "5 hours ago",
+    image: potteryImg,
+    tags: ["Pottery", "Gifting", "Diwali"],
+    badge: { label: "+24% MoM", tone: "forest" },
+    likes: "842",
+    comments: 41,
+    category: "Pottery",
+  },
+  {
+    id: 3,
+    author: "Moradabad Metal Cluster",
+    hindi: "मुरादाबाद धातु",
+    title: "EU buyer queries up 22%",
+    content:
+      "Brass diya sets and engraved planters are seeing strong export pull from Germany and the Netherlands. Lock 4-week stock — indigo-finish lines are outperforming antique-finish 1.6x.",
+    timestamp: "Yesterday",
+    image: metalImg,
+    tags: ["Metal", "Export", "Diwali"],
+    badge: { label: "Export pull", tone: "secondary" },
+    likes: "1,612",
+    comments: 124,
+    category: "Metal",
+  },
+  {
+    id: 4,
+    author: "Aanya · Home Decor",
+    hindi: "आन्या · सजावट",
+    title: "Terracotta planters: urban balcony wave",
+    content:
+      "Searches for 'terracotta planter set of 3' on Meesho up 14% WoW. Pair listings with macramé hangers — bundles convert 1.9x better than single SKUs.",
+    timestamp: "Yesterday",
+    tags: ["HomeDecor", "Terracotta", "BalconyGarden"],
+    likes: "503",
+    comments: 27,
+    category: "Home Decor",
+  },
+  {
+    id: 5,
+    author: "Bagru Block-Print Co-op",
+    hindi: "बगरू छपाई",
+    title: "Risk: indigo dye supply tightening",
+    content:
+      "Bagru reports 6-day delays on natural indigo. Lock raw stock for the next 4 weeks; consider madder-red as a substitute for floral motif lines.",
+    timestamp: "2 days ago",
+    tags: ["RiskAlert", "Dye", "Textiles"],
+    badge: { label: "Risk", tone: "destructive" },
+    likes: "318",
+    comments: 52,
+    category: "Textiles",
+  },
+  {
+    id: 6,
+    author: "Jaipur Cluster Desk",
+    hindi: "जयपुर डेस्क",
+    title: "Festival lift: Diwali in 19 days",
+    content:
+      "Brass diya demand will lift +61% in 19 days. If your batch lead time is under 21 days, start 40 units this week. Pre-orders are already 2.3x last year's pace.",
+    timestamp: "3 days ago",
+    tags: ["Diwali", "Forecast", "Metal"],
+    badge: { label: "Forecast", tone: "primary" },
+    likes: "974",
+    comments: 68,
+    category: "Metal",
+  },
 ];
 
-const clusterShare = [
-  { cluster: "Khurja", share: 28, color: "hsl(var(--primary))" },
-  { cluster: "Banaras", share: 22, color: "hsl(var(--secondary))" },
-  { cluster: "Moradabad", share: 18, color: "hsl(var(--forest))" },
-  { cluster: "Jaipur", share: 16, color: "hsl(var(--primary)/.6)" },
-  { cluster: "Bagru", share: 9, color: "hsl(var(--secondary)/.6)" },
-  { cluster: "Other", share: 7, color: "hsl(var(--muted-foreground))" },
+const NICHE_INSIGHTS = [
+  { niche: "Hand-block printed dupattas", confidence: 87, status: "capturing_market", momentum: "+12%", season: "Diwali" },
+  { niche: "Banarasi wedding silk", confidence: 81, status: "trending_up", momentum: "+9%", season: "Wedding" },
+  { niche: "Cobalt serving bowls", confidence: 74, status: "stable", momentum: "+2%", season: "None" },
+  { niche: "Antique brass planters", confidence: 58, status: "cooling_down", momentum: "-4%", season: "None" },
 ];
 
-const radarData = [
-  { axis: "Demand", textile: 92, pottery: 70, metal: 64 },
-  { axis: "Margin", textile: 64, pottery: 78, metal: 71 },
-  { axis: "Restock", textile: 80, pottery: 55, metal: 60 },
-  { axis: "Festival lift", textile: 95, pottery: 82, metal: 74 },
-  { axis: "Export pull", textile: 70, pottery: 58, metal: 88 },
-  { axis: "Price stability", textile: 60, pottery: 72, metal: 66 },
+const MATERIAL_FORECAST = [
+  { name: "Cotton (Surat)", price: "₹6,093", status: "Price drop", trend: "5.2% ↘", down: true },
+  { name: "Copper", price: "₹7,09,750", status: "High cost alert", trend: "2.4% ↗", down: false },
+  { name: "Natural indigo", price: "₹1,840", status: "Supply tight", trend: "1.1% ↗", down: false },
+  { name: "Terracotta clay", price: "₹420", status: "Stable", trend: "0.3% ↗", down: false },
 ];
 
-const movers = [
-  { name: "Indigo dupatta", hindi: "नील दुपट्टा", img: textileImg, delta: 38, why: "Diwali pre-orders + Surat cotton ↓", price: "₹1,450" },
-  { name: "Khurja serving bowl", hindi: "खुरजा कटोरा", img: potteryImg, delta: 24, why: "Karwa Chauth gifting cluster", price: "₹680" },
-  { name: "Brass diya set", hindi: "पीतल दीया", img: metalImg, delta: 61, why: "Diwali — 3-week lead window", price: "₹920" },
-  { name: "Banarasi stole", hindi: "बनारसी स्टोल", img: textileImg, delta: -8, why: "Monsoon dip, recovers in Aug", price: "₹3,200" },
-  { name: "Terracotta planter", hindi: "मिट्टी गमला", img: potteryImg, delta: 14, why: "Urban balcony gardening trend", price: "₹320" },
-];
+const AI_SUGGESTION = {
+  text: "Cotton prices dropped 5.2% in Surat this week — consider stocking 4 weeks of raw cotton before festival demand pushes prices back up. Pair with your wedding-silk SKUs for the Diwali pre-order window.",
+};
 
-const signals = [
-  { tag: "Diwali · दिवाली", body: "Brass diya demand will lift +61% in 19 days. Start 40 units this week.", tone: "primary" },
-  { tag: "Mandi · मंडी", body: "Cotton dropped 4.2% in Surat — best buy window for next 9 days.", tone: "forest" },
-  { tag: "Export · निर्यात", body: "Moradabad metalware queries from EU buyers up 22% MoM on IndiaMart.", tone: "secondary" },
-  { tag: "Risk · जोखिम", body: "Indigo dye supply tightening — Bagru reports 6-day delays. Lock 4-week stock.", tone: "destructive" },
-];
+const TABS = ["All trends", "Home decor", "Textiles", "Pottery", "Saved"] as const;
+type Tab = (typeof TABS)[number];
 
-const ranges = ["7D", "30D", "90D", "1Y"] as const;
+/* ---------------- helpers ---------------- */
+
+const statusColor = (s: string) => {
+  switch (s) {
+    case "capturing_market": return "text-forest";
+    case "trending_up": return "text-secondary";
+    case "stable": return "text-muted-foreground";
+    case "cooling_down": return "text-accent";
+    default: return "text-muted-foreground";
+  }
+};
+const statusBg = (s: string) => {
+  switch (s) {
+    case "capturing_market": return "bg-forest";
+    case "trending_up": return "bg-secondary";
+    case "stable": return "bg-muted-foreground";
+    case "cooling_down": return "bg-accent";
+    default: return "bg-muted-foreground";
+  }
+};
+const statusLabel = (s: string) => ({
+  capturing_market: "Capturing market",
+  trending_up: "Trending up",
+  stable: "Stable",
+  cooling_down: "Cooling down",
+}[s] || s);
+
+const badgeStyles = {
+  primary: "text-primary bg-primary/10 border-primary/20",
+  forest: "text-forest bg-forest/10 border-forest/20",
+  secondary: "text-secondary bg-secondary/10 border-secondary/20",
+  destructive: "text-destructive bg-destructive/10 border-destructive/20",
+};
 
 /* ---------------- page ---------------- */
 
 const Trends = () => {
-  const [range, setRange] = useState<(typeof ranges)[number]>("90D");
-  const [craft, setCraft] = useState<"all" | "textile" | "pottery" | "metal">("all");
+  const [tab, setTab] = useState<Tab>("All trends");
+  const [loading, setLoading] = useState(true);
+  const [bookmarks, setBookmarks] = useState<number[]>(() => {
+    try { return JSON.parse(localStorage.getItem("bookmarkedTrends") || "[]"); } catch { return []; }
+  });
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 700);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("bookmarkedTrends", JSON.stringify(bookmarks));
+  }, [bookmarks]);
+
+  const filtered = useMemo(() => {
+    if (tab === "All trends") return TRENDS;
+    if (tab === "Saved") return TRENDS.filter((t) => bookmarks.includes(t.id));
+    return TRENDS.filter(
+      (t) =>
+        t.category === tab ||
+        t.tags.some((tag) => tag.toLowerCase() === tab.replace(" ", "").toLowerCase()),
+    );
+  }, [tab, bookmarks]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="grid lg:grid-cols-[240px_1fr] min-h-screen">
-        <Sidebar />
-        <div className="flex flex-col min-w-0">
-          <Topbar />
-          <main className="flex-1 p-5 lg:p-8 space-y-8">
-            <Header range={range} setRange={setRange} craft={craft} setCraft={setCraft} />
-            <PulseStrip />
-            <div className="grid xl:grid-cols-3 gap-6">
-              <DemandChart className="xl:col-span-2" />
-              <SignalsCard />
-            </div>
-            <div className="grid xl:grid-cols-3 gap-6">
-              <PriceChart className="xl:col-span-2" />
-              <ClusterShare />
-            </div>
-            <div className="grid xl:grid-cols-3 gap-6">
-              <MoversTable className="xl:col-span-2" />
-              <CraftRadar />
-            </div>
-            <FestivalLane />
-            <footer className="pt-6 pb-4 text-xs text-muted-foreground font-data flex items-center justify-between border-t border-border">
-              <span>ArtisanGPS · रुझान v0.4 · sample data · refreshed 4 min ago</span>
-              <Link to="/dashboard" className="hover:text-foreground">← back to dashboard</Link>
-            </footer>
-          </main>
-        </div>
+    <AppShell
+      title="Trends ledger"
+      hindi="रुझान · what India is buying"
+      subtitle="A social feed of demand, mandi prices and festival pull across 6 craft clusters. Refreshed every 30 minutes."
+    >
+      <div className="flex flex-col lg:flex-row gap-8 xl:gap-14 items-start">
+        {/* Feed column */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full lg:max-w-[680px] flex-1 space-y-5"
+        >
+          <FilterBar tab={tab} setTab={setTab} />
+          {loading ? (
+            <>
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </>
+          ) : filtered.length === 0 ? (
+            <EmptyState tab={tab} />
+          ) : (
+            filtered.map((t, i) => (
+              <TrendCard
+                key={t.id}
+                trend={t}
+                index={i}
+                bookmarked={bookmarks.includes(t.id)}
+                onToggleBookmark={() =>
+                  setBookmarks((b) =>
+                    b.includes(t.id) ? b.filter((x) => x !== t.id) : [...b, t.id],
+                  )
+                }
+              />
+            ))
+          )}
+        </motion.section>
+
+        {/* Intelligence column */}
+        <motion.aside
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full lg:w-[380px] lg:flex-shrink-0 lg:sticky lg:top-32 space-y-6"
+        >
+          <div className="flex items-center gap-2">
+            <TrendingUp size={16} className="text-primary" />
+            <span className="font-display text-base">Market intelligence</span>
+            <span className="font-hindi text-xs text-muted-foreground ml-1">बाज़ार</span>
+          </div>
+          <NicheInsightsCard />
+          <AISuggestionCard />
+          <MaterialForecastCard />
+        </motion.aside>
       </div>
-    </div>
+    </AppShell>
   );
 };
 
 export default Trends;
 
-/* ---------------- chrome ---------------- */
+/* ---------------- filter bar ---------------- */
 
-const Sidebar = () => {
-  const items = [
-    { icon: Home, label: "Home", hindi: "घर", to: "/dashboard", active: false },
-    { icon: TrendingUp, label: "Trends", hindi: "रुझान", to: "/trends", active: true },
-    { icon: Store, label: "Mandi", hindi: "मंडी", to: "/dashboard", active: false },
-    { icon: Package, label: "Stock", hindi: "स्टॉक", to: "/dashboard", active: false },
-    { icon: ShoppingBag, label: "Orders", hindi: "ऑर्डर", to: "/dashboard", active: false },
-    { icon: LineIcon, label: "Reports", hindi: "रिपोर्ट", to: "/dashboard", active: false },
-    { icon: User, label: "Profile", hindi: "प्रोफ़ाइल", to: "/dashboard", active: false },
-  ];
-  return (
-    <aside className="hidden lg:flex flex-col bg-background border-r border-border p-5 sticky top-0 h-screen">
-      <Link to="/" className="flex items-center gap-2 mb-8">
-        <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground grid place-items-center font-display text-lg">अ</div>
-        <div>
-          <div className="font-display text-lg leading-none">ArtisanGPS</div>
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-data">बहीखाता</div>
-        </div>
-      </Link>
-      <nav className="flex-1 space-y-1">
-        {items.map((it) => (
-          <Link
-            key={it.label}
-            to={it.to}
-            className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-              it.active
-                ? "bg-primary/15 text-foreground font-medium border-l-2 border-primary"
-                : "text-muted-foreground hover:bg-card hover:text-foreground"
+const FilterBar = ({ tab, setTab }: { tab: Tab; setTab: (t: Tab) => void }) => (
+  <div className="rounded-3xl bg-card border border-border shadow-sm p-3 flex items-center gap-3">
+    <button className="w-9 h-9 rounded-full grid place-items-center text-primary hover:bg-primary/10 transition-colors shrink-0">
+      <SlidersHorizontal size={16} />
+    </button>
+    <div className="flex items-center gap-2 overflow-x-auto flex-1 no-scrollbar">
+      {TABS.map((t) => {
+        const active = tab === t;
+        return (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`px-4 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap transition-colors ${
+              active
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-border-strong/40"
             }`}
           >
-            <it.icon size={16} />
-            <span>{it.label}</span>
-            <span className="font-hindi text-xs ml-auto opacity-60">{it.hindi}</span>
-          </Link>
-        ))}
-      </nav>
-      <div className="rounded-xl border border-border bg-card p-3 text-xs">
-        <div className="font-display text-sm">All clusters</div>
-        <div className="text-muted-foreground font-data mt-0.5">6 regions · 1,284 artisans</div>
-        <button className="mt-3 text-primary font-data text-xs hover:underline">filter clusters →</button>
-      </div>
-    </aside>
-  );
-};
-
-const Topbar = () => (
-  <div className="sticky top-0 z-20 backdrop-blur bg-background/85 border-b border-border px-5 lg:px-8 py-3.5 flex items-center justify-between gap-4">
-    <div className="flex items-center gap-3 flex-1 max-w-md">
-      <div className="relative flex-1">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input
-          placeholder="search trends, materials, festivals…"
-          className="w-full bg-card border border-border rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-primary/60 placeholder:text-muted-foreground"
-        />
-      </div>
+            {t}
+          </button>
+        );
+      })}
     </div>
-    <div className="flex items-center gap-3 text-xs text-muted-foreground font-data">
-      <span className="hidden md:inline">Jaipur · 31°C</span>
-      <span className="hidden md:inline w-1 h-1 rounded-full bg-border" />
-      <span className="text-forest hidden md:inline">mandi open</span>
-      <button className="relative w-9 h-9 rounded-lg border border-border bg-card grid place-items-center hover:border-primary/60">
-        <Bell size={14} />
-        <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-primary" />
-      </button>
-      <button className="w-9 h-9 rounded-lg border border-border bg-card grid place-items-center hover:border-primary/60">
-        <Settings size={14} />
-      </button>
-      <div className="w-9 h-9 rounded-full bg-secondary text-secondary-foreground grid place-items-center font-display">र</div>
-    </div>
+    <span className="w-px h-8 bg-border shrink-0" />
+    <button className="w-9 h-9 rounded-full grid place-items-center text-muted-foreground hover:text-foreground hover:bg-muted shrink-0">
+      <Search size={16} />
+    </button>
   </div>
 );
 
-/* ---------------- header ---------------- */
+/* ---------------- trend card ---------------- */
 
-const Header = ({
-  range,
-  setRange,
-  craft,
-  setCraft,
+const TrendCard = ({
+  trend,
+  index,
+  bookmarked,
+  onToggleBookmark,
 }: {
-  range: (typeof ranges)[number];
-  setRange: (r: (typeof ranges)[number]) => void;
-  craft: "all" | "textile" | "pottery" | "metal";
-  setCraft: (c: "all" | "textile" | "pottery" | "metal") => void;
+  trend: Trend;
+  index: number;
+  bookmarked: boolean;
+  onToggleBookmark: () => void;
 }) => {
-  const crafts = [
-    { id: "all", label: "All crafts", hindi: "सब" },
-    { id: "textile", label: "Textile", hindi: "कपड़ा" },
-    { id: "pottery", label: "Pottery", hindi: "मिट्टी" },
-    { id: "metal", label: "Metal", hindi: "धातु" },
-  ] as const;
+  const [liked, setLiked] = useState(false);
   return (
-    <div className="space-y-5">
-      <div className="flex items-end justify-between flex-wrap gap-4">
+    <motion.article
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, delay: index * 0.05 }}
+      className="rounded-3xl bg-card border border-border shadow-sm overflow-hidden"
+    >
+      <header className="flex items-center gap-3 p-4">
+        <div className="w-10 h-10 rounded-full bg-primary/15 text-primary grid place-items-center font-display text-base">
+          {trend.author.charAt(0)}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[15px] font-semibold leading-tight truncate">{trend.author}</div>
+          <div className="text-[12px] text-muted-foreground flex items-center gap-2">
+            <span>{trend.timestamp}</span>
+            {trend.hindi && <span className="font-hindi opacity-70">· {trend.hindi}</span>}
+          </div>
+        </div>
+        {trend.badge && (
+          <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${badgeStyles[trend.badge.tone]}`}>
+            {trend.badge.label}
+          </span>
+        )}
+        <button className="p-1.5 text-muted-foreground hover:text-foreground">
+          <MoreVertical size={16} />
+        </button>
+      </header>
+
+      {trend.image && (
+        <div className="border-y border-border">
+          <img src={trend.image} alt={trend.title} className="w-full h-[320px] object-cover" />
+        </div>
+      )}
+
+      <div className="p-5 space-y-3">
+        <h3 className="font-display text-xl leading-snug">{trend.title}</h3>
+        <p className="text-[13px] text-foreground/80 leading-relaxed">{trend.content}</p>
+        <div className="flex flex-wrap gap-2 pt-1">
+          {trend.tags.map((tag) => (
+            <span key={tag} className="text-[13px] font-semibold text-forest">
+              #{tag}
+            </span>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-6 pt-3 border-t border-border">
+          <button
+            onClick={() => setLiked((v) => !v)}
+            className={`flex items-center gap-1.5 text-[13px] transition-colors ${
+              liked ? "text-destructive" : "text-muted-foreground hover:text-destructive"
+            }`}
+          >
+            <Heart size={16} fill={liked ? "currentColor" : "none"} />
+            <span className="font-data">{trend.likes}</span>
+          </button>
+          <button className="flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-primary transition-colors">
+            <MessageCircle size={16} />
+            <span className="font-data">{trend.comments}</span>
+          </button>
+          <button
+            onClick={onToggleBookmark}
+            className={`flex items-center gap-1.5 text-[13px] ml-auto transition-colors ${
+              bookmarked ? "text-secondary" : "text-muted-foreground hover:text-secondary"
+            }`}
+          >
+            <Bookmark size={16} fill={bookmarked ? "currentColor" : "none"} />
+            <span>{bookmarked ? "Saved" : "Save"}</span>
+          </button>
+        </div>
+      </div>
+    </motion.article>
+  );
+};
+
+/* ---------------- skeleton ---------------- */
+
+const SkeletonCard = () => (
+  <div className="rounded-3xl bg-card border border-border p-5 space-y-4 animate-pulse">
+    <div className="flex items-center gap-3">
+      <div className="w-10 h-10 rounded-full bg-muted" />
+      <div className="space-y-2 flex-1">
+        <div className="h-3 w-32 bg-muted rounded" />
+        <div className="h-2 w-20 bg-muted rounded" />
+      </div>
+    </div>
+    <div className="h-48 bg-muted rounded-2xl" />
+    <div className="h-4 w-2/3 bg-muted rounded" />
+    <div className="h-3 w-full bg-muted rounded" />
+    <div className="h-3 w-5/6 bg-muted rounded" />
+  </div>
+);
+
+const EmptyState = ({ tab }: { tab: Tab }) => (
+  <div className="rounded-3xl bg-card border border-dashed border-border p-10 text-center">
+    <div className="font-display text-xl">Nothing here yet</div>
+    <p className="text-sm text-muted-foreground mt-2">
+      {tab === "Saved"
+        ? "Bookmark a trend to see it here. Tap the Save button on any card."
+        : `No trends in ${tab} this week. Try another category.`}
+    </p>
+  </div>
+);
+
+/* ---------------- intelligence: niche insights ---------------- */
+
+const NicheInsightsCard = () => (
+  <div className="rounded-2xl bg-card border border-border border-l-4 border-l-forest p-5 shadow-sm">
+    <div className="flex items-center gap-2 mb-4">
+      <Activity size={16} className="text-forest" />
+      <span className="font-display text-base">Textile insights</span>
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-data ml-auto">live trends</span>
+    </div>
+    <div className="space-y-4">
+      {NICHE_INSIGHTS.map((n, i) => (
+        <motion.div
+          key={n.niche}
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 * i }}
+          className="space-y-1.5 pb-4 border-b border-border last:border-b-0 last:pb-0"
+        >
+          <div className="flex items-start justify-between gap-2">
+            <span className="text-[13px] font-semibold leading-tight">{n.niche}</span>
+            <div className="text-right shrink-0">
+              <div className={`text-sm font-data font-semibold ${statusColor(n.status)}`}>{n.confidence}%</div>
+              <div className="text-[8px] uppercase font-bold tracking-wider text-muted-foreground">confidence</div>
+            </div>
+          </div>
+          <div className="h-1 rounded-full bg-muted overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${n.confidence}%` }}
+              transition={{ duration: 1, delay: 0.2 + i * 0.1, ease: "easeOut" }}
+              className={`h-full ${statusBg(n.status)}`}
+            />
+          </div>
+          <div className="flex items-center justify-between text-[10px]">
+            <span className={statusColor(n.status)}>{statusLabel(n.status)}</span>
+            <span className={`font-data font-semibold ${n.momentum.startsWith("+") ? "text-forest" : "text-destructive"}`}>
+              {n.momentum} {n.momentum.startsWith("+") ? "↗" : "↘"}
+            </span>
+          </div>
+          {n.season !== "None" && (
+            <div className="inline-flex items-center gap-1 text-[10px] font-bold text-accent uppercase tracking-wider">
+              <Sun size={10} /> Season: {n.season}
+            </div>
+          )}
+        </motion.div>
+      ))}
+    </div>
+    <p className="mt-4 text-[10px] italic text-muted-foreground font-data">
+      Algorithm: (30d trend momentum × 0.6) + (festival proximity × 0.4)
+    </p>
+  </div>
+);
+
+/* ---------------- intelligence: AI suggestion ---------------- */
+
+const AISuggestionCard = () => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-2xl bg-secondary/5 border border-secondary/20 p-5 shadow-sm">
+      <div className="flex items-start gap-3 mb-3">
+        <div className="w-10 h-10 rounded-full bg-secondary text-secondary-foreground grid place-items-center shrink-0">
+          <Sparkles size={18} />
+        </div>
         <div>
-          <div className="text-[11px] uppercase tracking-[0.22em] text-primary font-data mb-2">
-            रुझान · trends ledger
-          </div>
-          <h1 className="font-display text-3xl lg:text-5xl leading-[1.05] tracking-tight">
-            What India is buying<br />
-            <span className="italic text-muted-foreground">— this week, this season.</span>
-          </h1>
-          <p className="text-sm text-muted-foreground mt-3 max-w-xl">
-            A read of demand, mandi prices and festival pull across 6 craft clusters.
-            Updated every 30 minutes from IndiaMart, Meesho, mandi feeds & Google Trends.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="h-9 px-3 rounded-lg border border-border bg-card text-xs font-data flex items-center gap-2 hover:border-primary/60">
-            <Filter size={13} /> Cluster: All
-          </button>
-          <button className="h-9 px-3 rounded-lg border border-border bg-card text-xs font-data flex items-center gap-2 hover:border-primary/60">
-            <Download size={13} /> Export
-          </button>
+          <div className="text-sm font-display font-semibold">Artisan AI suggestion</div>
+          <div className="text-[11px] text-secondary font-data">Market optimization tip · सुझाव</div>
         </div>
       </div>
-
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="inline-flex rounded-lg border border-border bg-card p-1">
-          {crafts.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => setCraft(c.id)}
-              className={`px-3 py-1.5 rounded-md text-xs font-data transition-colors ${
-                craft === c.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {c.label} <span className="font-hindi opacity-60">· {c.hindi}</span>
-            </button>
-          ))}
-        </div>
-        <div className="inline-flex rounded-lg border border-border bg-card p-1">
-          {ranges.map((r) => (
-            <button
-              key={r}
-              onClick={() => setRange(r)}
-              className={`px-3 py-1.5 rounded-md text-xs font-data transition-colors ${
-                range === r ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
-      </div>
+      <p className="text-[13px] leading-relaxed text-foreground/85">{AI_SUGGESTION.text}</p>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="mt-4 w-full bg-card border border-secondary/30 text-secondary text-[13px] font-bold rounded-lg py-2.5 hover:bg-background transition-colors flex items-center justify-center gap-2"
+      >
+        Calculate potential profit
+        <ChevronRight size={14} className={`transition-transform ${open ? "rotate-90" : ""}`} />
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="mt-4 rounded-lg bg-card border-l-4 border-l-secondary p-4 space-y-2 text-[12px]">
+              <div className="font-semibold text-forest">Estimated margin impact: +12.4%</div>
+              <div className="flex justify-between text-muted-foreground font-data">
+                <span>Reduced base material cost</span><span>−₹4.20 / unit</span>
+              </div>
+              <div className="flex justify-between text-muted-foreground font-data">
+                <span>Bulk sourcing savings</span><span>−₹1.10 / unit</span>
+              </div>
+              <div className="pt-2 border-t border-border flex justify-between font-bold text-forest">
+                <span>Projected net added profit</span><span>₹12,450 / batch</span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
 
-/* ---------------- pulse strip ---------------- */
+/* ---------------- intelligence: material forecast ---------------- */
 
-const PulseStrip = () => {
-  const stats = [
-    { label: "Demand index", hindi: "मांग सूचकांक", value: "138.4", delta: 12.6, sub: "vs last 30D" },
-    { label: "Avg margin", hindi: "औसत मार्जिन", value: "34.2%", delta: 2.1, sub: "across crafts" },
-    { label: "Festival lift", hindi: "त्यौहार उछाल", value: "+38%", delta: 8.0, sub: "Diwali · 19 days" },
-    { label: "Mandi volatility", hindi: "मंडी अस्थिरता", value: "Low", delta: -1.4, sub: "7D σ" },
-  ];
+const MaterialForecastCard = () => {
+  const [showAll, setShowAll] = useState(false);
+  const list = showAll ? MATERIAL_FORECAST : MATERIAL_FORECAST.slice(0, 2);
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {stats.map((s) => {
-        const up = s.delta >= 0;
-        return (
-          <div key={s.label} className="rounded-xl border border-border bg-card p-4 relative overflow-hidden">
-            <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-data flex items-center justify-between">
-              <span>{s.label}</span>
-              <span className="font-hindi opacity-70">{s.hindi}</span>
+    <div className="rounded-2xl bg-card border border-border p-5 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <span className="font-display text-base">Raw material forecast</span>
+        <button
+          onClick={() => setShowAll((v) => !v)}
+          className="text-[12px] text-secondary font-data hover:underline"
+        >
+          {showAll ? "Show less" : "View all"}
+        </button>
+      </div>
+      <div className="space-y-3">
+        {list.map((m) => (
+          <div key={m.name} className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-muted grid place-items-center shrink-0">
+              {m.down ? (
+                <TrendingDown size={14} className="text-forest" />
+              ) : (
+                <TrendingUp size={14} className="text-destructive" />
+              )}
             </div>
-            <div className="mt-2 font-display text-3xl">{s.value}</div>
-            <div className={`mt-1 inline-flex items-center gap-1 text-xs font-data ${up ? "text-forest" : "text-destructive"}`}>
-              {up ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />} {Math.abs(s.delta)}%
-              <span className="text-muted-foreground ml-1">· {s.sub}</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-[13px] font-semibold truncate">{m.name}</span>
+                <span className="text-sm font-data font-bold">{m.price}</span>
+              </div>
+              <div className="flex items-center justify-between gap-2 mt-0.5">
+                <span className={`text-[11px] ${m.down ? "text-forest" : "text-destructive"}`}>{m.status}</span>
+                <span className={`text-[12px] font-data font-semibold ${m.down ? "text-forest" : "text-destructive"}`}>
+                  {m.trend}
+                </span>
+              </div>
             </div>
-            <div className="absolute -right-2 -bottom-2 w-20 h-20 rounded-full bg-primary/5 blur-2xl" />
           </div>
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 };
-
-/* ---------------- demand chart ---------------- */
-
-const DemandChart = ({ className = "" }: { className?: string }) => (
-  <div className={`rounded-2xl border border-border bg-card p-5 ${className}`}>
-    <div className="flex items-start justify-between mb-4">
-      <div>
-        <div className="text-[10px] uppercase tracking-wider text-primary font-data">Demand · मांग</div>
-        <div className="font-display text-xl mt-0.5">12-month demand index by craft</div>
-        <div className="text-xs text-muted-foreground mt-1">Indexed to Jan 2025 · weighted by cluster volume</div>
-      </div>
-      <div className="flex items-center gap-3 text-[11px] font-data">
-        <Legend2 color="hsl(var(--primary))" label="Textile" />
-        <Legend2 color="hsl(var(--secondary))" label="Pottery" />
-        <Legend2 color="hsl(var(--forest))" label="Metal" />
-      </div>
-    </div>
-    <div className="h-72">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={demandSeries} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-          <defs>
-            <linearGradient id="gT" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.45} />
-              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="gP" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--secondary))" stopOpacity={0.35} />
-              <stop offset="100%" stopColor="hsl(var(--secondary))" stopOpacity={0} />
-            </linearGradient>
-            <linearGradient id="gM" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--forest))" stopOpacity={0.35} />
-              <stop offset="100%" stopColor="hsl(var(--forest))" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="2 4" stroke="hsl(var(--border))" vertical={false} />
-          <XAxis dataKey="m" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
-          <Tooltip
-            contentStyle={{
-              background: "hsl(var(--background))",
-              border: "1px solid hsl(var(--border))",
-              borderRadius: 8,
-              fontSize: 12,
-            }}
-          />
-          <Area type="monotone" dataKey="textile" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#gT)" />
-          <Area type="monotone" dataKey="pottery" stroke="hsl(var(--secondary))" strokeWidth={2} fill="url(#gP)" />
-          <Area type="monotone" dataKey="metal" stroke="hsl(var(--forest))" strokeWidth={2} fill="url(#gM)" />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-const Legend2 = ({ color, label }: { color: string; label: string }) => (
-  <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-    <span className="w-2.5 h-2.5 rounded-sm" style={{ background: color }} />
-    {label}
-  </span>
-);
-
-/* ---------------- signals ---------------- */
-
-const SignalsCard = () => (
-  <div className="rounded-2xl border border-border bg-card p-5 flex flex-col">
-    <div className="flex items-center justify-between mb-3">
-      <div>
-        <div className="text-[10px] uppercase tracking-wider text-primary font-data">Signals · संकेत</div>
-        <div className="font-display text-xl mt-0.5">What to act on</div>
-      </div>
-      <Sparkles size={16} className="text-primary" />
-    </div>
-    <div className="space-y-3 flex-1">
-      {signals.map((s) => (
-        <div key={s.tag} className="rounded-xl border border-border bg-background p-3.5 hover:border-primary/40 transition-colors">
-          <div className={`text-[10px] uppercase tracking-wider font-data mb-1.5 ${
-            s.tone === "primary" ? "text-primary" :
-            s.tone === "forest" ? "text-forest" :
-            s.tone === "secondary" ? "text-secondary" : "text-destructive"
-          }`}>{s.tag}</div>
-          <div className="text-sm leading-relaxed">{s.body}</div>
-        </div>
-      ))}
-    </div>
-    <button className="mt-4 text-xs font-data text-primary hover:underline self-start">view all 14 signals →</button>
-  </div>
-);
-
-/* ---------------- price chart ---------------- */
-
-const PriceChart = ({ className = "" }: { className?: string }) => (
-  <div className={`rounded-2xl border border-border bg-card p-5 ${className}`}>
-    <div className="flex items-start justify-between mb-4">
-      <div>
-        <div className="text-[10px] uppercase tracking-wider text-primary font-data">Mandi · मंडी</div>
-        <div className="font-display text-xl mt-0.5">Raw material prices · 7 weeks</div>
-        <div className="text-xs text-muted-foreground mt-1">Median across Surat · Delhi · local mandi</div>
-      </div>
-      <div className="flex items-center gap-3 text-[11px] font-data">
-        <Legend2 color="hsl(var(--primary))" label="Cotton ₹/kg" />
-        <Legend2 color="hsl(var(--secondary))" label="Indigo ₹/kg" />
-        <Legend2 color="hsl(var(--forest))" label="Brass ₹/kg" />
-      </div>
-    </div>
-    <div className="h-72">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={priceSeries} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="2 4" stroke="hsl(var(--border))" vertical={false} />
-          <XAxis dataKey="w" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
-          <YAxis yAxisId="L" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
-          <YAxis yAxisId="R" orientation="right" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
-          <Tooltip
-            contentStyle={{
-              background: "hsl(var(--background))",
-              border: "1px solid hsl(var(--border))",
-              borderRadius: 8,
-              fontSize: 12,
-            }}
-          />
-          <Line yAxisId="L" type="monotone" dataKey="cotton" stroke="hsl(var(--primary))" strokeWidth={2.2} dot={{ r: 3 }} />
-          <Line yAxisId="R" type="monotone" dataKey="indigo" stroke="hsl(var(--secondary))" strokeWidth={2.2} dot={{ r: 3 }} />
-          <Line yAxisId="L" type="monotone" dataKey="brass" stroke="hsl(var(--forest))" strokeWidth={2.2} dot={{ r: 3 }} />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-/* ---------------- cluster share ---------------- */
-
-const ClusterShare = () => (
-  <div className="rounded-2xl border border-border bg-card p-5">
-    <div className="text-[10px] uppercase tracking-wider text-primary font-data">Clusters · समूह</div>
-    <div className="font-display text-xl mt-0.5 mb-4">Share of demand</div>
-    <div className="h-56">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={clusterShare} layout="vertical" margin={{ top: 0, right: 30, left: 0, bottom: 0 }}>
-          <XAxis type="number" hide />
-          <YAxis dataKey="cluster" type="category" tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }} axisLine={false} tickLine={false} width={80} />
-          <Tooltip
-            cursor={{ fill: "hsl(var(--muted))" }}
-            contentStyle={{
-              background: "hsl(var(--background))",
-              border: "1px solid hsl(var(--border))",
-              borderRadius: 8,
-              fontSize: 12,
-            }}
-          />
-          <Bar dataKey="share" radius={[0, 6, 6, 0]} label={{ position: "right", fill: "hsl(var(--muted-foreground))", fontSize: 11, formatter: (v: number) => `${v}%` }}>
-            {clusterShare.map((c, i) => (
-              <Cell key={i} fill={c.color} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-/* ---------------- movers table ---------------- */
-
-const MoversTable = ({ className = "" }: { className?: string }) => (
-  <div className={`rounded-2xl border border-border bg-card overflow-hidden ${className}`}>
-    <div className="p-5 border-b border-border flex items-center justify-between">
-      <div>
-        <div className="text-[10px] uppercase tracking-wider text-primary font-data">Movers · चलने वाले</div>
-        <div className="font-display text-xl mt-0.5">Top movers this week</div>
-      </div>
-      <button className="text-xs font-data text-muted-foreground hover:text-foreground">all SKUs →</button>
-    </div>
-    <div className="divide-y divide-border">
-      {movers.map((m) => {
-        const up = m.delta >= 0;
-        return (
-          <div key={m.name} className="p-4 flex items-center gap-4 hover:bg-background/40 transition-colors">
-            <img src={m.img} alt={m.name} className="w-12 h-12 rounded-lg object-cover border border-border" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <div className="font-medium text-sm truncate">{m.name}</div>
-                <div className="font-hindi text-xs text-muted-foreground truncate">· {m.hindi}</div>
-              </div>
-              <div className="text-xs text-muted-foreground mt-0.5 truncate">{m.why}</div>
-            </div>
-            <div className="text-right">
-              <div className="font-data text-sm">{m.price}</div>
-              <div className={`inline-flex items-center gap-1 text-xs font-data ${up ? "text-forest" : "text-destructive"}`}>
-                {up ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />} {Math.abs(m.delta)}%
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  </div>
-);
-
-/* ---------------- radar ---------------- */
-
-const CraftRadar = () => (
-  <div className="rounded-2xl border border-border bg-card p-5">
-    <div className="text-[10px] uppercase tracking-wider text-primary font-data">Craft fit · तुलना</div>
-    <div className="font-display text-xl mt-0.5 mb-2">Craft scorecard</div>
-    <div className="h-72">
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={radarData} outerRadius="75%">
-          <PolarGrid stroke="hsl(var(--border))" />
-          <PolarAngleAxis dataKey="axis" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
-          <Radar name="Textile" dataKey="textile" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} />
-          <Radar name="Pottery" dataKey="pottery" stroke="hsl(var(--secondary))" fill="hsl(var(--secondary))" fillOpacity={0.25} />
-          <Radar name="Metal" dataKey="metal" stroke="hsl(var(--forest))" fill="hsl(var(--forest))" fillOpacity={0.25} />
-          <Tooltip
-            contentStyle={{
-              background: "hsl(var(--background))",
-              border: "1px solid hsl(var(--border))",
-              borderRadius: 8,
-              fontSize: 12,
-            }}
-          />
-        </RadarChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-/* ---------------- festival lane ---------------- */
-
-const festivals = [
-  { name: "Raksha Bandhan", hindi: "रक्षा बंधन", date: "Aug 9", lift: 22, crafts: ["Textile", "Metal"], days: 4 },
-  { name: "Onam", hindi: "ओणम", date: "Sep 5", lift: 18, crafts: ["Textile"], days: 31 },
-  { name: "Karwa Chauth", hindi: "करवा चौथ", date: "Oct 10", lift: 27, crafts: ["Pottery", "Metal"], days: 66 },
-  { name: "Diwali", hindi: "दीपावली", date: "Oct 29", lift: 61, crafts: ["Pottery", "Metal", "Textile"], days: 85 },
-  { name: "Christmas", hindi: "क्रिसमस", date: "Dec 25", lift: 14, crafts: ["Metal"], days: 142 },
-];
-
-const FestivalLane = () => (
-  <div className="rounded-2xl border border-border bg-card p-5">
-    <div className="flex items-center justify-between mb-4">
-      <div>
-        <div className="text-[10px] uppercase tracking-wider text-primary font-data flex items-center gap-1.5">
-          <Flame size={12} /> Festival lane · त्यौहार
-        </div>
-        <div className="font-display text-xl mt-0.5">Demand lift forecast · next 6 months</div>
-      </div>
-      <button className="text-xs font-data text-muted-foreground hover:text-foreground">full calendar →</button>
-    </div>
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-      {festivals.map((f) => (
-        <div key={f.name} className="rounded-xl border border-border bg-background p-4 relative overflow-hidden group hover:border-primary/40 transition-colors">
-          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-data">{f.date}</div>
-          <div className="font-display text-lg mt-1 leading-tight">{f.name}</div>
-          <div className="font-hindi text-xs text-muted-foreground">{f.hindi}</div>
-          <div className="mt-3 flex items-baseline gap-1">
-            <span className="font-display text-2xl text-primary">+{f.lift}%</span>
-            <span className="text-[10px] text-muted-foreground font-data">lift</span>
-          </div>
-          <div className="mt-2 flex flex-wrap gap-1">
-            {f.crafts.map((c) => (
-              <span key={c} className="text-[10px] font-data px-1.5 py-0.5 rounded border border-border text-muted-foreground">{c}</span>
-            ))}
-          </div>
-          <div className="text-[10px] text-muted-foreground font-data mt-3">{f.days} days away</div>
-          <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-primary/10 blur-2xl group-hover:bg-primary/20 transition-colors" />
-        </div>
-      ))}
-    </div>
-  </div>
-);
