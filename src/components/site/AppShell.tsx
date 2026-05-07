@@ -63,8 +63,8 @@ export const AppShell = ({
         </aside>
 
         <div className="flex flex-col min-w-0">
-          <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-border">
-            <div className="flex items-center gap-4 px-5 lg:px-8 h-16">
+          <header className="border-b border-border">
+            <div className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl flex items-center gap-4 px-5 lg:px-8 h-16 border-b border-border">
               <div className="flex items-center gap-2 flex-1 max-w-md">
                 <Search size={16} className="text-muted-foreground" />
                 <input
