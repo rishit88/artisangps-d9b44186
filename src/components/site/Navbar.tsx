@@ -51,7 +51,7 @@ const Navbar = () => {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
-          <a href="#cta" className="text-sm text-foreground/70 hover:text-foreground">
+          <a href="/dashboard" className="text-sm text-foreground/70 hover:text-foreground">
             Sign in
           </a>
           <a
