@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import {
   ArrowDown,
   ArrowUp,
@@ -7,12 +7,11 @@ import {
   ArrowDownRight,
   Bell,
   Bookmark,
+  Compass,
   Home,
   LineChart,
-  Package,
   Send,
   Settings,
-  ShoppingBag,
   Sparkles,
   Store,
   TrendingUp,
