@@ -386,7 +386,7 @@ const ChatPanel = () => {
         </span>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-background-deep">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-secondary/10">
         {messages.map((m, i) => (
           <div
             key={i}
