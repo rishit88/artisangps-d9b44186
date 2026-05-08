@@ -88,13 +88,12 @@ const Dashboard = () => {
 
 const Sidebar = () => {
   const items = [
-    { icon: Home, label: "Home", hindi: "घर", active: false },
-    { icon: TrendingUp, label: "Trends", hindi: "रुझान", active: false },
-    { icon: Store, label: "Mandi", hindi: "मंडी", active: true },
-    { icon: Package, label: "Stock", hindi: "स्टॉक", active: false },
-    { icon: ShoppingBag, label: "Orders", hindi: "ऑर्डर", active: false },
-    { icon: LineChart, label: "Reports", hindi: "रिपोर्ट", active: false },
-    { icon: User, label: "Profile", hindi: "प्रोफ़ाइल", active: false },
+    { to: "/dashboard", icon: Home, label: "Home", hindi: "घर" },
+    { to: "/trends", icon: TrendingUp, label: "Trends", hindi: "रुझान" },
+    { to: "/mandi", icon: Store, label: "Mandi", hindi: "मंडी" },
+    { to: "/advisor", icon: Compass, label: "Advisor", hindi: "सलाहकार" },
+    { to: "/reports", icon: LineChart, label: "Reports", hindi: "रिपोर्ट" },
+    { to: "/profile", icon: User, label: "Profile", hindi: "प्रोफ़ाइल" },
   ];
   return (
     <aside className="hidden lg:flex flex-col bg-background border-r border-border p-5 sticky top-0 h-screen">
@@ -107,18 +106,22 @@ const Sidebar = () => {
       </Link>
       <nav className="flex-1 space-y-1">
         {items.map((it) => (
-          <button
-            key={it.label}
-            className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-              it.active
-                ? "bg-primary/15 text-foreground font-medium border-l-2 border-primary"
-                : "text-muted-foreground hover:bg-card hover:text-foreground"
-            }`}
+          <NavLink
+            key={it.to}
+            to={it.to}
+            end
+            className={({ isActive }) =>
+              `w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                isActive
+                  ? "bg-primary/15 text-foreground font-medium border-l-2 border-primary"
+                  : "text-muted-foreground hover:bg-card hover:text-foreground"
+              }`
+            }
           >
             <it.icon size={16} />
             <span>{it.label}</span>
             <span className="font-hindi text-xs ml-auto opacity-60">{it.hindi}</span>
-          </button>
+          </NavLink>
         ))}
       </nav>
       <div className="rounded-xl border border-border bg-card p-3 text-xs">
